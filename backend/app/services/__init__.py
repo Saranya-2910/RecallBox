@@ -26,6 +26,7 @@ from app.services.qa import (
     build_rag_prompt,
     extract_and_validate_citations,
 )
+from app.services.related import find_related_documents
 from app.services.search import (
     ScoredChunk,
     compute_reciprocal_rank_fusion,
@@ -38,6 +39,10 @@ from app.services.storage import (
     LocalStorageService,
     StorageService,
     get_storage_service,
+)
+from app.services.summarizer import (
+    DocumentSummaryAndTags,
+    enrich_document_summary_and_tags,
 )
 
 __all__ = [
@@ -70,4 +75,7 @@ __all__ = [
     "build_rag_prompt",
     "extract_and_validate_citations",
     "answer_rag_question",
+    "DocumentSummaryAndTags",
+    "enrich_document_summary_and_tags",
+    "find_related_documents",
 ]

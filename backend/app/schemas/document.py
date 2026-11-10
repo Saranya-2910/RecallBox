@@ -5,6 +5,8 @@ from typing import List, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
+from app.schemas.tag import TagResponse
+
 
 class SourceType(str, Enum):
     """Permitted source types for intake."""
@@ -48,6 +50,7 @@ class DocumentResponse(BaseModel):
     category: Optional[str] = Field(None, description="Document category")
     summary: Optional[str] = Field(None, description="AI-generated document summary")
     created_at: datetime = Field(..., description="Intake timestamp")
+    tags: List[TagResponse] = Field(default_factory=list, description="Associated document tags")
 
     model_config = ConfigDict(from_attributes=True)
 

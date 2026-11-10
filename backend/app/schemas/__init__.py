@@ -10,7 +10,9 @@ from app.schemas.document import (
 )
 from app.schemas.health import HealthCheckResponse
 from app.schemas.qa import AskRequest, AskResponse, CitationItem
+from app.schemas.related import RelatedDocumentItem, RelatedDocumentsResponse
 from app.schemas.search import SearchMode, SearchResponse, SearchResultItem
+from app.schemas.tag import TagBase, TagCreate, TagResponse
 from app.schemas.user import UserBase, UserRegister, UserResponse
 
 __all__ = [
@@ -33,4 +35,9 @@ __all__ = [
     "AskRequest",
     "AskResponse",
     "CitationItem",
+    "TagBase",
+    "TagCreate",
+    "TagResponse",
+    "RelatedDocumentItem",
+    "RelatedDocumentsResponse",
 ]

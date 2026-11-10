@@ -13,6 +13,7 @@ from app.api import (
     health_router,
     qa_router,
     search_router,
+    tags_router,
 )
 from app.core.config import settings
 from app.core.logging import setup_logging
@@ -49,12 +50,13 @@ if settings.CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Root-level endpoints matching spec (/health, /auth/..., /documents/..., /search, /ask)
+# Root-level endpoints matching spec (/health, /auth/..., /documents/..., /search, /ask, /tags)
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(documents_router)
 app.include_router(search_router)
 app.include_router(qa_router)
+app.include_router(tags_router)
 
 # Versioned API routes (/api/v1/...)
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)

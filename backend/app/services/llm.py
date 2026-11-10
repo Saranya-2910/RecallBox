@@ -38,6 +38,14 @@ class MockLLMProvider(LLMProvider):
         if self.custom_responder:
             return self.custom_responder(prompt, system_instruction)
 
+        # If prompt asks for summary and tags JSON
+        if "summary" in prompt.lower() and "tags" in prompt.lower() and "json" in prompt.lower():
+            return (
+                '{"summary": "This document outlines key technical designs, patterns, and implementations.", '
+                '"tags": ["fastapi", "python", "backend"], '
+                '"category": "engineering"}'
+            )
+
         # Check if context contains chunks
         chunk_matches = re.findall(r"\[Chunk\s+(\d+)\]", prompt)
 

@@ -1,4 +1,4 @@
-"""Document intake endpoints: PDF upload, links, notes, pagination, filtering, deletion, and reprocessing."""
+"""Document intake endpoints: PDF upload, links, notes, pagination, filtering, deletion, reprocessing, and related."""
 import hashlib
 import logging
 import math
@@ -21,6 +21,7 @@ from app.api.deps import get_current_user
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.document import Document
+from app.models.tag import Tag
 from app.models.user import User
 from app.schemas.document import (
     CreateLinkRequest,
@@ -30,8 +31,10 @@ from app.schemas.document import (
     DocumentStatus,
     SourceType,
 )
+from app.schemas.related import RelatedDocumentsResponse
 from app.services.embedding import EmbeddingProvider, get_embedding_provider
 from app.services.ingestion import ingest_document
+from app.services.related import find_related_documents
 from app.services.storage import StorageService, get_storage_service
 
 logger = logging.getLogger(__name__)
@@ -222,13 +225,14 @@ async def create_note_document(
     "",
     response_model=DocumentListResponse,
     status_code=status.HTTP_200_OK,
-    summary="List and filter user documents with pagination",
+    summary="List and filter user documents with pagination and tags",
 )
 async def list_documents(
     page: int = Query(1, ge=1, description="Page number starting at 1"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
     status: Optional[str] = Query(None, description="Filter by status (pending, processing, ready, failed)"),
     category: Optional[str] = Query(None, description="Filter by category"),
+    tag: Optional[str] = Query(None, description="Filter by associated tag name"),
     source_type: Optional[str] = Query(None, description="Filter by source_type (pdf, link, note)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -242,9 +246,12 @@ async def list_documents(
         base_filter.append(Document.category == category)
     if source_type:
         base_filter.append(Document.source_type == source_type.lower())
+    if tag:
+        clean_tag = tag.lower().strip()
+        base_filter.append(Document.tags.any(Tag.name == clean_tag))
 
     # Count total matching
-    count_stmt = select(func.count(Document.id)).where(*base_filter)
+    count_stmt = select(func.count(Document.id.distinct())).where(*base_filter)
     total = (await db.scalar(count_stmt)) or 0
 
     # Query items with pagination
@@ -342,7 +349,7 @@ async def reprocess_document(
     storage: StorageService = Depends(get_storage_service),
     embedding: EmbeddingProvider = Depends(get_embedding_provider),
 ) -> DocumentResponse:
-    """Trigger idempotent document reprocessing, rebuilding chunks and embeddings."""
+    """Trigger idempotent document reprocessing, rebuilding chunks, embeddings, and summary."""
     stmt = select(Document).where(
         Document.id == document_id,
         Document.user_id == current_user.id,
@@ -359,4 +366,42 @@ async def reprocess_document(
         db=db,
         storage=storage,
         embedding_provider=embedding,
+    )
+
+
+@router.get(
+    "/{document_id}/related",
+    response_model=RelatedDocumentsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve semantically related documents by embedding similarity",
+)
+async def get_related_documents(
+    document_id: int,
+    limit: int = Query(5, ge=1, le=20, description="Maximum related documents to return"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> RelatedDocumentsResponse:
+    """Find and return similar documents within user's library by comparing centroid chunk embeddings."""
+    # Verify document ownership
+    doc_stmt = select(Document).where(
+        Document.id == document_id,
+        Document.user_id == current_user.id,
+    )
+    doc = await db.scalar(doc_stmt)
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    related_items = await find_related_documents(
+        document_id=document_id,
+        user_id=current_user.id,
+        db=db,
+        limit=limit,
+    )
+
+    return RelatedDocumentsResponse(
+        document_id=document_id,
+        related=related_items,
     )

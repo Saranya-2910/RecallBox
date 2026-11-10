@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.chunk import Chunk
+    from app.models.tag import Tag
     from app.models.user import User
 
 
@@ -50,6 +51,12 @@ class Document(Base):
         back_populates="document",
         cascade="all, delete-orphan",
         order_by="Chunk.chunk_index",
+    )
+    tags: Mapped[List["Tag"]] = relationship(
+        "Tag",
+        secondary="document_tags",
+        back_populates="documents",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

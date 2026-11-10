@@ -194,3 +194,13 @@ pytest -v
 - **Context:** Generative models can hallucinate citation IDs (e.g., citing `[Chunk 999]` when only `[Chunk 101]` was retrieved).
 - **Decision:** Implemented post-generation citation extraction using regex, validating each cited ID against the set of retrieved passages. Unverified or hallucinated citation IDs are dropped from structured output before audit logging.
 - **Interview Takeaway:** Ensures 100% citation integrity and traceability for audited Q&A logs.
+
+### 17. Fail-Soft LLM Auto-Enrichment
+- **Context:** Automatic summary generation and tag extraction use LLM JSON completion. If the LLM encounters rate limits or errors, document ingestion should not be aborted.
+- **Decision:** Encapsulated summarization and tag generation in a fail-soft boundary: failures log warnings and leave fields empty, while the document successfully finishes with `status=ready` and remains completely searchable.
+- **Interview Takeaway:** Decouples essential search indexing from non-critical metadata enrichment, guaranteeing system resilience.
+
+### 18. Document Centroid Vector for Semantic Relatedness
+- **Context:** Calculating pairwise similarities across all individual chunks between documents is $O(M \times N)$ and computationally prohibitive.
+- **Decision:** Aggregated each document's chunk vectors into a single L2-normalized centroid vector ($\vec{v}_{doc} = \frac{1}{|C|} \sum \vec{v}_c$) to compute document-level cosine similarity.
+- **Interview Takeaway:** Reduces related document discovery complexity from quadratic chunk comparisons to linear document centroid comparisons.
