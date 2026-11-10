@@ -1,4 +1,4 @@
-"""Document intake endpoints: PDF upload, links, notes, pagination, filtering, and deletion."""
+"""Document intake endpoints: PDF upload, links, notes, pagination, filtering, deletion, and reprocessing."""
 import hashlib
 import logging
 import math
@@ -30,6 +30,8 @@ from app.schemas.document import (
     DocumentStatus,
     SourceType,
 )
+from app.services.embedding import EmbeddingProvider, get_embedding_provider
+from app.services.ingestion import ingest_document
 from app.services.storage import StorageService, get_storage_service
 
 logger = logging.getLogger(__name__)
@@ -325,3 +327,36 @@ async def delete_document(
     await db.commit()
 
     logger.info("Deleted document id=%d for user_id=%d", document_id, current_user.id)
+
+
+@router.post(
+    "/{document_id}/reprocess",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retry failed or pending document ingestion",
+)
+async def reprocess_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
+    embedding: EmbeddingProvider = Depends(get_embedding_provider),
+) -> DocumentResponse:
+    """Trigger idempotent document reprocessing, rebuilding chunks and embeddings."""
+    stmt = select(Document).where(
+        Document.id == document_id,
+        Document.user_id == current_user.id,
+    )
+    doc = await db.scalar(stmt)
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    return await ingest_document(
+        document_id=doc.id,
+        db=db,
+        storage=storage,
+        embedding_provider=embedding,
+    )

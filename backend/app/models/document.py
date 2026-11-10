@@ -1,6 +1,6 @@
 """SQLAlchemy model for uploaded, linked, and written documents."""
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.chunk import Chunk
     from app.models.user import User
 
 
@@ -44,6 +45,12 @@ class Document(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="documents")
+    chunks: Mapped[List["Chunk"]] = relationship(
+        "Chunk",
+        back_populates="document",
+        cascade="all, delete-orphan",
+        order_by="Chunk.chunk_index",
+    )
 
     def __repr__(self) -> str:
         return f"<Document id={self.id} title={self.title} status={self.status} user_id={self.user_id}>"

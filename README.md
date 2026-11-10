@@ -159,3 +159,18 @@ pytest -v
 - **Context:** Repeated uploads of the same article or book waste storage, worker compute, and vector database capacity.
 - **Decision:** Generated SHA-256 checksums (`content_hash`) indexed and scoped to `user_id`. Duplicate attempts trigger HTTP 409 Conflict.
 - **Interview Takeaway:** Prevents duplicate chunking and embedding costs while preserving user privacy across tenants.
+
+### 10. Abstract EmbeddingProvider Strategy Pattern
+- **Context:** Tests and local development cannot depend on live third-party API keys or internet availability, but production requires state-of-the-art embedding models.
+- **Decision:** Placed embeddings behind an abstract `EmbeddingProvider` interface implemented by `GeminiEmbeddingProvider` (with exponential backoff and batching), `SentenceTransformersEmbeddingProvider`, and `MockEmbeddingProvider` (deterministic normalized vectors from SHA-256).
+- **Interview Takeaway:** Enables 100% offline unit and integration testing with zero external dependencies, making the test suite lightning fast, hermetic, and free.
+
+### 11. Boundary-Aware Semantic Chunking with 15% Overlap
+- **Context:** Naive fixed-size character chunking splits sentences and code blocks down the middle, degrading vector retrieval and citation accuracy.
+- **Decision:** The `Chunker` splits on paragraph boundaries (`\n\n`) first and falls back to sentence boundaries for long paragraphs, enforcing a 500-800 token budget with ~15% token carryover into consecutive chunks.
+- **Interview Takeaway:** Preserves semantic cohesion and context continuity across chunk boundaries, directly boosting downstream retrieval recall (Hit@K).
+
+### 12. Idempotent Ingestion Pipeline and Fail-Soft Worker
+- **Context:** Retrying ingestion on failed documents or worker restarts can create orphaned or duplicate chunk rows.
+- **Decision:** Reprocessing atomically prunes existing chunks in the same database transaction before indexing new ones. Corrupted or unreadable files update `status=failed` with readable errors without terminating the background worker.
+- **Interview Takeaway:** Ensures fault tolerance and self-healing in distributed worker architectures.
