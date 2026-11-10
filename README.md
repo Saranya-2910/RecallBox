@@ -129,3 +129,18 @@ pytest -v
 - **Context:** Environment variables for CORS origins may be passed as JSON lists (`["http://localhost:3000"]`) or comma-separated strings.
 - **Decision:** Implemented a `@field_validator` on `CORS_ORIGINS` in `Settings` that automatically parses both JSON arrays and comma-separated string inputs into `List[str]`.
 - **Interview Takeaway:** Bulletproof configuration parsing prevents deployment configuration bugs across various cloud platforms (Docker, Render, Vercel).
+
+### 4. Direct Bcrypt Hashing over Deprecated Passlib
+- **Context:** The historical standard library `passlib` is unmaintained and introduces runtime deprecation/version inspection breakages on Python 3.12 with modern `bcrypt` releases.
+- **Decision:** Implemented password hashing and verification using `bcrypt` directly with `gensalt()` and UTF-8 encoding.
+- **Interview Takeaway:** Modern, zero-legacy dependency setup with zero deprecation warnings, retaining standard bcrypt work factor security.
+
+### 5. Resilient Sliding-Window Login Rate Limiting
+- **Context:** Authentication endpoints must be protected against credential stuffing and brute force attempts, but should not crash if an external cache is temporarily unreachable during startup or unit testing.
+- **Decision:** Built a sliding-window rate limiter with an in-memory fallback tracking timestamped attempts per `IP:email` tuple, rejecting requests beyond 5 attempts per 60 seconds with HTTP 429.
+- **Interview Takeaway:** Provides multi-layered defense against brute force attacks with graceful degradation.
+
+### 6. Strict User Isolation via Injected Dependency
+- **Context:** Multi-tenant security requires that no user can read or mutate another user's documents, chunks, or queries.
+- **Decision:** Every protected route injects `get_current_user`, which validates the cryptographic JWT signature, checks expiration, and retrieves the verified `User` record.
+- **Interview Takeaway:** Eliminates client-provided `user_id` query parameters; the user identity is derived strictly from the verified JWT payload.

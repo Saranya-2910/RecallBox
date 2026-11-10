@@ -1,6 +1,6 @@
 """Pytest configuration and test fixtures."""
 import os
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Dict
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -11,9 +11,11 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import create_access_token, get_password_hash, login_rate_limiter
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+from app.models.user import User
 
 # Determine test database URL: use TEST_DATABASE_URL if provided, else SQLite in-memory with StaticPool
 TEST_DB_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
@@ -36,6 +38,7 @@ TestingSessionLocal = async_sessionmaker(
 @pytest.fixture(autouse=True)
 async def setup_test_database():
     """Setup test database tables before each test and drop them after."""
+    login_rate_limiter.reset()
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -64,3 +67,23 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def test_user(db_session: AsyncSession) -> User:
+    """Fixture providing a persisted test user."""
+    user = User(
+        email="testuser@example.com",
+        password_hash=get_password_hash("securePassword123!"),
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def test_user_auth_headers(test_user: User) -> Dict[str, str]:
+    """Provide authorization headers containing a valid JWT for test_user."""
+    token = create_access_token(data={"sub": str(test_user.id), "email": test_user.email})
+    return {"Authorization": f"Bearer {token}"}
