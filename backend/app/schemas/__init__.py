@@ -9,6 +9,7 @@ from app.schemas.document import (
     SourceType,
 )
 from app.schemas.health import HealthCheckResponse
+from app.schemas.search import SearchMode, SearchResponse, SearchResultItem
 from app.schemas.user import UserBase, UserRegister, UserResponse
 
 __all__ = [
@@ -25,4 +26,7 @@ __all__ = [
     "CreateNoteRequest",
     "DocumentResponse",
     "DocumentListResponse",
+    "SearchMode",
+    "SearchResultItem",
+    "SearchResponse",
 ]

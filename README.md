@@ -174,3 +174,13 @@ pytest -v
 - **Context:** Retrying ingestion on failed documents or worker restarts can create orphaned or duplicate chunk rows.
 - **Decision:** Reprocessing atomically prunes existing chunks in the same database transaction before indexing new ones. Corrupted or unreadable files update `status=failed` with readable errors without terminating the background worker.
 - **Interview Takeaway:** Ensures fault tolerance and self-healing in distributed worker architectures.
+
+### 13. Reciprocal Rank Fusion (RRF) Hybrid Search
+- **Context:** Semantic vector search (cosine similarity) and lexical full-text search (`ts_rank`) produce scores with completely non-comparable numerical distributions.
+- **Decision:** Used Reciprocal Rank Fusion (RRF) with $k=60$ ($score = \sum \frac{1}{k + rank_i}$) to merge top semantic and keyword matches based solely on ordinal positions.
+- **Interview Takeaway:** Eliminates brittle manual score normalization heuristics and parameter weighting; achieves higher recall and MRR by combining keyword precision with semantic generalization.
+
+### 14. Document Diversity & Anti-Flooding Deduplication
+- **Context:** Large or repetitive documents can monopolize all top-K retrieval slots, hiding relevant results from other documents.
+- **Decision:** Implemented `deduplicate_results_by_document` which limits any single document to at most 3 passages in the final returned list.
+- **Interview Takeaway:** Maximizes library-wide result diversity without degrading the top relevance tier.
