@@ -1,10 +1,14 @@
 """SQLAlchemy model for application users."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.document import Document
 
 
 class User(Base):
@@ -18,6 +22,13 @@ class User(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
+    )
+
+    # Relationships
+    documents: Mapped[List["Document"]] = relationship(
+        "Document",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:

@@ -6,7 +6,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import api_router, auth_router, health_router
+from app.api import api_router, auth_router, documents_router, health_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 
@@ -42,9 +42,10 @@ if settings.CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Root-level endpoints matching spec (/health, /auth/register, /auth/login, /auth/me)
+# Root-level endpoints matching spec (/health, /auth/..., /documents/...)
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(documents_router)
 
 # Versioned API routes (/api/v1/...)
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)

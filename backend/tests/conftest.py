@@ -1,5 +1,7 @@
 """Pytest configuration and test fixtures."""
 import os
+import shutil
+from pathlib import Path
 from typing import AsyncGenerator, Dict
 
 import pytest
@@ -11,11 +13,17 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.core.security import create_access_token, get_password_hash, login_rate_limiter
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.user import User
+from app.services.storage import LocalStorageService, get_storage_service
+
+# Configure test storage directory
+TEST_STORAGE_PATH = Path("./test_storage").resolve()
+settings.LOCAL_STORAGE_DIR = str(TEST_STORAGE_PATH)
 
 # Determine test database URL: use TEST_DATABASE_URL if provided, else SQLite in-memory with StaticPool
 TEST_DB_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
@@ -37,13 +45,18 @@ TestingSessionLocal = async_sessionmaker(
 
 @pytest.fixture(autouse=True)
 async def setup_test_database():
-    """Setup test database tables before each test and drop them after."""
+    """Setup test database tables and storage before each test and drop after."""
     login_rate_limiter.reset()
+    TEST_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
+
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+    if TEST_STORAGE_PATH.exists():
+        shutil.rmtree(TEST_STORAGE_PATH, ignore_errors=True)
 
 
 @pytest.fixture
@@ -55,12 +68,24 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
-    """HTTP async client with dependency overrides for the test database."""
+def test_storage() -> LocalStorageService:
+    """Fixture providing local storage service targeting test storage directory."""
+    return LocalStorageService(base_dir=str(TEST_STORAGE_PATH))
+
+
+@pytest.fixture
+async def client(
+    db_session: AsyncSession, test_storage: LocalStorageService
+) -> AsyncGenerator[AsyncClient, None]:
+    """HTTP async client with dependency overrides for test database and storage."""
     async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
+    def override_get_storage() -> LocalStorageService:
+        return test_storage
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_storage_service] = override_get_storage
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

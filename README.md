@@ -144,3 +144,18 @@ pytest -v
 - **Context:** Multi-tenant security requires that no user can read or mutate another user's documents, chunks, or queries.
 - **Decision:** Every protected route injects `get_current_user`, which validates the cryptographic JWT signature, checks expiration, and retrieves the verified `User` record.
 - **Interview Takeaway:** Eliminates client-provided `user_id` query parameters; the user identity is derived strictly from the verified JWT payload.
+
+### 7. StorageService Interface & Directory-Isolated Local Backend
+- **Context:** Intake requires storing raw PDF files and notes on disk, but cloud production deployments will migrate to S3/GCS.
+- **Decision:** Built an abstract `StorageService` interface (`save_file`, `read_file`, `delete_file`) implemented by `LocalStorageService`. Stored files are structured under `{base_dir}/{user_id}/{uuid}_{sanitized_name}` with strict path traversal checking.
+- **Interview Takeaway:** Decouples file handling from HTTP handlers, enabling cloud storage migration with zero changes to business logic while enforcing filesystem-level user isolation.
+
+### 8. Multi-Layer File Integrity & Magic Byte Validation
+- **Context:** Malicious or malformed files can compromise downstream text extraction workers if only extension or client-reported MIME type is inspected.
+- **Decision:** Validations enforce `.pdf` file extension, `application/pdf` MIME type, a maximum size cap (`MAX_UPLOAD_SIZE_MB`), and binary magic bytes checking (`%PDF-` header).
+- **Interview Takeaway:** Defense-in-depth file validation blocks renamed executables or corrupted binaries before storage or Celery processing.
+
+### 9. Per-User Content Hash Deduplication
+- **Context:** Repeated uploads of the same article or book waste storage, worker compute, and vector database capacity.
+- **Decision:** Generated SHA-256 checksums (`content_hash`) indexed and scoped to `user_id`. Duplicate attempts trigger HTTP 409 Conflict.
+- **Interview Takeaway:** Prevents duplicate chunking and embedding costs while preserving user privacy across tenants.
