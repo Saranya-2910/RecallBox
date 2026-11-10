@@ -1,8 +1,254 @@
 [
   {
     "id": 1,
-    "question": "What is dependency injection in FastAPI?",
-    "expected_document": "FastAPI Guide",
-    "expected_page": 1
+    "question": "How does FastAPI handle dependency injection with the Depends function?",
+    "expected_document": "FastAPI Dependency Injection and Lifecycle",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 2,
+    "question": "How to cleanly yield database sessions and ensure rollback or commit after requests?",
+    "expected_document": "FastAPI Dependency Injection and Lifecycle",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 3,
+    "question": "What is the recommended replacement for on_event startup decorators in FastAPI?",
+    "expected_document": "FastAPI Dependency Injection and Lifecycle",
+    "expected_page": 3,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 4,
+    "question": "What are the three vector distance operators available in pgvector?",
+    "expected_document": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 5,
+    "question": "What are the configuration parameters m and ef_construction for HNSW indexing?",
+    "expected_document": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 6,
+    "question": "Why does IVFFlat need to be trained only after substantial table data is inserted?",
+    "expected_document": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "expected_page": 3,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 7,
+    "question": "How does Celery offload compute-heavy work to background workers via Redis?",
+    "expected_document": "Celery Distributed Task Queue & Redis Broker",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 8,
+    "question": "How do autoretry_for and retry_backoff handle transient network errors in tasks?",
+    "expected_document": "Celery Distributed Task Queue & Redis Broker",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 9,
+    "question": "What setting prevents message loss if a worker crashes before finishing execution?",
+    "expected_document": "Celery Distributed Task Queue & Redis Broker",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 10,
+    "question": "What are the key limitations of lexical keyword search compared to vector search?",
+    "expected_document": "Hybrid Search with Reciprocal Rank Fusion",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 11,
+    "question": "What is the formula for Reciprocal Rank Fusion and what value is used for constant k?",
+    "expected_document": "Hybrid Search with Reciprocal Rank Fusion",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 12,
+    "question": "Why is rank-based fusion superior to directly adding raw similarity scores together?",
+    "expected_document": "Hybrid Search with Reciprocal Rank Fusion",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 13,
+    "question": "What claims are included in a stateless JWT payload such as sub, iat, and exp?",
+    "expected_document": "JWT Authentication & Multi-Tenant User Isolation",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 14,
+    "question": "How do we enforce multi-tenant isolation at the database query layer for every user?",
+    "expected_document": "JWT Authentication & Multi-Tenant User Isolation",
+    "expected_page": 2,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 15,
+    "question": "How to prevent tenant A from reading or modifying tenant B's private data?",
+    "expected_document": "JWT Authentication & Multi-Tenant User Isolation",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 16,
+    "question": "How does prompt engineering instruct language models to refuse unanswerable questions?",
+    "expected_document": "RAG Hallucination Mitigation & Citation Grounding",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 17,
+    "question": "How does citation verification filter out hallucinated chunk identifiers?",
+    "expected_document": "RAG Hallucination Mitigation & Citation Grounding",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 18,
+    "question": "What is the definition and importance of Hit@K and Mean Reciprocal Rank in RAG evaluation?",
+    "expected_document": "RAG Hallucination Mitigation & Citation Grounding",
+    "expected_page": 3,
+    "query_type": "keyword"
+  },
+  {
+    "id": 19,
+    "question": "How do multi-stage Docker builds reduce the final production container image size?",
+    "expected_document": "Docker Multi-Stage Builds & Container Networking",
+    "expected_page": 1,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 20,
+    "question": "Why should container applications run as an unprivileged non-root user?",
+    "expected_document": "Docker Multi-Stage Builds & Container Networking",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 21,
+    "question": "How does Docker internal DNS allow services like postgres and redis to communicate?",
+    "expected_document": "Docker Multi-Stage Builds & Container Networking",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 22,
+    "question": "What Rust engine powers validation and serialization performance in Pydantic V2?",
+    "expected_document": "Pydantic V2 Architecture & Rust Core Performance",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 23,
+    "question": "What is the difference between field_validator with mode before versus after?",
+    "expected_document": "Pydantic V2 Architecture & Rust Core Performance",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 24,
+    "question": "How does pydantic-settings separate environment configuration in modern Python apps?",
+    "expected_document": "Pydantic V2 Architecture & Rust Core Performance",
+    "expected_page": 2,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 25,
+    "question": "Managing hierarchical sub-dependencies modularly in FastAPI path operations",
+    "expected_document": "FastAPI Dependency Injection and Lifecycle",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 26,
+    "question": "Runtime tuning of graph vector exploration with hnsw.ef_search parameter",
+    "expected_document": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 27,
+    "question": "Voronoi cells and the lists parameter in partitioned vector clustering",
+    "expected_document": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "expected_page": 3,
+    "query_type": "keyword"
+  },
+  {
+    "id": 28,
+    "question": "Asynchronous job queues preventing latency in web API request handlers",
+    "expected_document": "Celery Distributed Task Queue & Redis Broker",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 29,
+    "question": "Exponential backoff with jitter when encountering API rate limits in background jobs",
+    "expected_document": "Celery Distributed Task Queue & Redis Broker",
+    "expected_page": 2,
+    "query_type": "semantic"
+  },
+  {
+    "id": 30,
+    "question": "Balancing exact keyword matching with deep semantic understanding in search engines",
+    "expected_document": "Hybrid Search with Reciprocal Rank Fusion",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 31,
+    "question": "Cormack reciprocal ranks consensus ranking formula for search systems",
+    "expected_document": "Hybrid Search with Reciprocal Rank Fusion",
+    "expected_page": 2,
+    "query_type": "keyword"
+  },
+  {
+    "id": 32,
+    "question": "Validating HMAC HS256 signatures on incoming bearer tokens without database lookup",
+    "expected_document": "JWT Authentication & Multi-Tenant User Isolation",
+    "expected_page": 1,
+    "query_type": "keyword"
+  },
+  {
+    "id": 33,
+    "question": "Explicit WHERE user_id scoping to guarantee multi-tenant security boundaries",
+    "expected_document": "JWT Authentication & Multi-Tenant User Isolation",
+    "expected_page": 2,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 34,
+    "question": "Refusing to answer questions when retrieved passages lack supporting evidence",
+    "expected_document": "RAG Hallucination Mitigation & Citation Grounding",
+    "expected_page": 1,
+    "query_type": "semantic"
+  },
+  {
+    "id": 35,
+    "question": "Isolating compiler toolchains and wheels in builder stages of container builds",
+    "expected_document": "Docker Multi-Stage Builds & Container Networking",
+    "expected_page": 1,
+    "query_type": "hybrid"
+  },
+  {
+    "id": 36,
+    "question": "Speed improvements in data parsing by rewriting Python core logic in Rust",
+    "expected_document": "Pydantic V2 Architecture & Rust Core Performance",
+    "expected_page": 1,
+    "query_type": "semantic"
   }
 ]

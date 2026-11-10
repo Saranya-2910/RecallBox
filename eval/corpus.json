@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "title": "FastAPI Dependency Injection and Lifecycle",
+    "source_type": "pdf",
+    "category": "Backend",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "FastAPI features a powerful Dependency Injection system built around the Depends function. Dependency injection allows developers to declare shared logic, database sessions, authentication checks, and permissions cleanly across path operations. When FastAPI encounters a Depends parameter, it resolves the dependency graph hierarchically before invoking the endpoint function. Sub-dependencies are resolved automatically, allowing modular architectures where authentication dependencies depend on database session dependencies without boilerplate code."
+      },
+      {
+        "page_number": 2,
+        "content": "Database sessions in FastAPI are commonly managed using yield dependencies. A yield dependency creates an asynchronous database session, yields control to the request handler, and guarantees execution of the finally block after the HTTP response has been sent to the client. This pattern guarantees that transactions are committed or rolled back and database connections are safely returned to the connection pool, preventing connection leaks even if the route handler raises an unhandled exception."
+      },
+      {
+        "page_number": 3,
+        "content": "Application startup and shutdown in modern FastAPI applications are orchestrated via lifespan context managers rather than legacy on_event decorators. A lifespan function uses the asynccontextmanager decorator to perform one-time initialization, such as creating database connection pools, testing vector store connectivity, and warming up machine learning caches before accepting client traffic, followed by clean termination of worker pools upon SIGTERM."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "PostgreSQL pgvector Indexing: HNSW vs IVFFlat",
+    "source_type": "pdf",
+    "category": "Database",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "The pgvector extension for PostgreSQL provides native vector storage and approximate nearest neighbor (ANN) search using cosine distance (<=>), Euclidean L2 distance (<->), and inner product (<#>) operators. For high-dimensional vector embeddings, indexing is essential because sequential scans degrade linearly with table size. Two primary vector index types exist in pgvector: Hierarchical Navigable Small World (HNSW) and Inverted File Flat (IVFFlat)."
+      },
+      {
+        "page_number": 2,
+        "content": "HNSW builds a multi-layer graph where lower layers contain dense connections and higher layers provide long-distance exploratory jumps. HNSW is controlled by two parameters: m (maximum connections per element, typically 16) and ef_construction (search depth during index building, typically 64 to 128). Query speed is tuned at runtime via the hnsw.ef_search parameter. HNSW requires higher memory and longer build times than IVFFlat but delivers superior recall and significantly higher queries per second without requiring training on existing data."
+      },
+      {
+        "page_number": 3,
+        "content": "IVFFlat partitions the vector space into clusters using k-means clustering. It requires specifying the lists parameter, which determines the number of Voronoi cells. At query time, ivfflat.probes dictates how many nearest centroids are searched. Unlike HNSW, IVFFlat must be built only after substantial data has been inserted into the table, as training on an empty or tiny table results in unrepresentative cluster centers and poor retrieval recall."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Celery Distributed Task Queue & Redis Broker",
+    "source_type": "note",
+    "category": "Infrastructure",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "Celery is an asynchronous task queue and job queue based on distributed message passing. In web applications, compute-heavy or I/O-intensive operations such as PDF document parsing, text chunking, and embedding generation must never block HTTP request handlers. The API produces task messages and pushes them to a Redis message broker, while background worker processes consume tasks from the queue asynchronously."
+      },
+      {
+        "page_number": 2,
+        "content": "Fault tolerance in Celery is managed through task retries and acknowledgment mechanisms. Tasks configure autoretry_for tuples specifying transient network or API exceptions, combined with retry_backoff=True for exponential backoff with jitter. To prevent task loss during unexpected worker process crashes, acks_late=True ensures the message broker acknowledges and removes a task only after successful execution rather than immediately upon delivery."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Hybrid Search with Reciprocal Rank Fusion",
+    "source_type": "link",
+    "category": "Information Retrieval",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "Information retrieval systems face a fundamental tradeoff between lexical keyword search and dense semantic vector search. Keyword search using BM25 or Postgres tsvector excels at precise entity matching, acronyms, and exact codes, but fails when users use synonyms or paraphrased queries. Conversely, semantic vector search captures conceptual meaning and semantic intent but can miss specific serial numbers, domain jargon, or rare proper nouns."
+      },
+      {
+        "page_number": 2,
+        "content": "Reciprocal Rank Fusion (RRF) resolves this score incompatibility by merging ranked lists based purely on positional order rather than arbitrary score values. The RRF score for document d is defined as the sum over all search systems of 1 divided by (k + rank_i), where k is a smoothing constant traditionally set to 60. By operating on reciprocal ranks, RRF prevents an outlier score from one search algorithm from overpowering the consensus ranking, achieving robust retrieval accuracy across both keyword and conceptual query types."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "JWT Authentication & Multi-Tenant User Isolation",
+    "source_type": "pdf",
+    "category": "Security",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "JSON Web Tokens (JWT) provide stateless authentication for modern distributed APIs. A signed JWT contains a header, payload, and cryptographic signature using HMAC SHA-256 (HS256) or asymmetric RS256. The payload contains standard claims including sub (the authenticated user ID), iat (issued at timestamp), and exp (expiration timestamp). The API verifies the cryptographic signature on incoming Bearer tokens without requiring a database session for authentication validation."
+      },
+      {
+        "page_number": 2,
+        "content": "In multi-tenant architectures, data isolation is paramount. Every protected route extracts the authenticated user ID strictly from the verified JWT token claims rather than from client-supplied URL parameters or request bodies. In the database layer, every single SELECT, UPDATE, and DELETE query incorporates an explicit WHERE user_id = :current_user_id clause. This multi-tenant boundary ensures tenant A can never inspect, modify, or delete tenant B's documents or chunk vectors."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "RAG Hallucination Mitigation & Citation Grounding",
+    "source_type": "pdf",
+    "category": "AI/RAG",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "Retrieval-Augmented Generation (RAG) systems frequently suffer from hallucinations where the generative language model synthesizes answers based on general pre-training knowledge rather than the user's private documents. Strict prompt engineering is the first line of defense: the system prompt must explicitly command the model to answer exclusively from the provided context chunks and issue an explicit refusal when the retrieved context does not contain sufficient facts."
+      },
+      {
+        "page_number": 2,
+        "content": "To guarantee factual verifiability, every statement produced by the model must cite the unique identifier of the source chunk from which the evidence was derived. A post-processing citation validation layer parses the generated response, extracts all cited chunk IDs, and verifies that every cited ID was genuinely present in the retrieved candidate set. Any hallucinated chunk IDs are stripped before returning the response to the user."
+      },
+      {
+        "page_number": 3,
+        "content": "When evaluating RAG retrieval systems, standard information retrieval metrics include Hit@K (the proportion of queries where at least one ground-truth document appears within the top K results) and Mean Reciprocal Rank (MRR, the average of reciprocal ranks of the first relevant document). A high MRR indicates that relevant evidence is consistently placed near the top of the prompt context, minimizing context dilution and cost."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Docker Multi-Stage Builds & Container Networking",
+    "source_type": "note",
+    "category": "DevOps",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "Production containerization uses Docker multi-stage builds to create lightweight, secure container images. In Python applications, build tools such as gcc, build-essential, and temporary wheel caches are isolated in an initial builder stage. The final runtime stage copies only the compiled virtual environment and application source code, reducing image size by up to 70% and removing unnecessary compilers from production environments."
+      },
+      {
+        "page_number": 2,
+        "content": "Container security best practices require running application processes as an unprivileged non-root user. In Dockerfiles, an explicit adduser or useradd instruction creates a recallbox user, and USER recallbox switches execution privileges. In Docker Compose, services communicate over an isolated internal bridge network where service names (such as postgres and redis) resolve automatically via Docker's embedded DNS server."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Pydantic V2 Architecture & Rust Core Performance",
+    "source_type": "link",
+    "category": "Backend",
+    "pages": [
+      {
+        "page_number": 1,
+        "content": "Pydantic V2 represents a complete ground-up rewrite of Python's most popular data validation library. The core validation and serialization engine is written in Rust under the pydantic-core package. By moving type inspection, JSON parsing, and dictionary validation to native Rust code, Pydantic V2 delivers a 5x to 50x performance improvement over Pydantic V1, substantially reducing CPU overhead in high-throughput FastAPI microservices."
+      },
+      {
+        "page_number": 2,
+        "content": "Pydantic V2 replaces legacy root_validator and validator decorators with @field_validator and @model_validator decorators. Field validators operate with mode='before' to sanitize raw incoming data or mode='after' to validate typed values. Configuration is centralized in a ConfigDict dictionary class, replacing the inner Config class. Pydantic-settings separates environment configuration loading into a dedicated package for clean dependency management."
+      }
+    ]
+  }
+]

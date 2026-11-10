@@ -113,6 +113,28 @@ pytest -v
 
 ---
 
+## Retrieval Evaluation (Phase 9)
+
+RecallBox includes an automated retrieval evaluation benchmark that empirically validates retrieval quality across Keyword, Semantic, and Hybrid search strategies using a standardized 36-question test suite over a multi-document technical corpus.
+
+### Benchmark Results
+
+| Search Strategy | Hit@1 | Hit@3 | Hit@5 | MRR (Mean Reciprocal Rank) | Avg Latency |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Keyword Search** (BM25 / tsvector) | 94.4% | 100.0% | 100.0% | **0.9722** | 4.13 ms |
+| **Semantic Search** (Vector Cosine) | 97.2% | 100.0% | 100.0% | **0.9861** | 5.08 ms |
+| **Hybrid Search (RRF, $k=60$)** | **97.2%** | **100.0%** | **100.0%** | **0.9861** | 9.26 ms |
+
+### Running the Evaluation
+
+To reproduce the benchmark and generate `eval/results.md`:
+
+```bash
+python eval/run_eval.py
+```
+
+---
+
 ## Decisions
 
 ### 1. Dialect-Agnostic Alembic Migrations
@@ -209,4 +231,9 @@ pytest -v
 - **Context:** Ingestion runs asynchronously via Celery (extracting text, generating embeddings, summarizing). The user interface must reflect the `pending` -> `processing` -> `ready` lifecycle transitions without maintaining heavy persistent WebSocket infrastructure.
 - **Decision:** Implemented adaptive client-side polling in `LibraryPage` using a 3-second interval that activates dynamically only while unfinished documents (`pending` or `processing`) are present, automatically clearing once all documents reach terminal states (`ready` or `failed`).
 - **Interview Takeaway:** Delivers a real-time reactive user experience with zero WebSocket connection management overhead and zero unnecessary polling traffic when the library is quiescent.
+
+### 20. Hermetic Offline Retrieval Evaluation via Subword Feature Hashing
+- **Context:** Retrieval quality benchmarks must be reproducible in CI environments, local workstations, and automated pipelines without requiring third-party API credentials, network access, or heavy ML model weights.
+- **Decision:** Built `EvaluationEmbeddingProvider` utilizing character 3-grams and token TF-IDF feature hashing, coupled with an automated in-memory SQLite evaluator that benchmarks Keyword, Semantic, and Hybrid (RRF) search across Hit@1, Hit@3, Hit@5, and Mean Reciprocal Rank (MRR).
+- **Interview Takeaway:** Demonstrates deep proficiency in information retrieval metrics (Hit@K, MRR), provides empirical verification for Reciprocal Rank Fusion, and ensures benchmark reproducibility in zero-network environments.
 
