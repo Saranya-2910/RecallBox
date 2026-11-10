@@ -204,3 +204,9 @@ pytest -v
 - **Context:** Calculating pairwise similarities across all individual chunks between documents is $O(M \times N)$ and computationally prohibitive.
 - **Decision:** Aggregated each document's chunk vectors into a single L2-normalized centroid vector ($\vec{v}_{doc} = \frac{1}{|C|} \sum \vec{v}_c$) to compute document-level cosine similarity.
 - **Interview Takeaway:** Reduces related document discovery complexity from quadratic chunk comparisons to linear document centroid comparisons.
+
+### 19. Smart Adaptive Ingestion Polling in React
+- **Context:** Ingestion runs asynchronously via Celery (extracting text, generating embeddings, summarizing). The user interface must reflect the `pending` -> `processing` -> `ready` lifecycle transitions without maintaining heavy persistent WebSocket infrastructure.
+- **Decision:** Implemented adaptive client-side polling in `LibraryPage` using a 3-second interval that activates dynamically only while unfinished documents (`pending` or `processing`) are present, automatically clearing once all documents reach terminal states (`ready` or `failed`).
+- **Interview Takeaway:** Delivers a real-time reactive user experience with zero WebSocket connection management overhead and zero unnecessary polling traffic when the library is quiescent.
+
