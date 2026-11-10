@@ -184,3 +184,13 @@ pytest -v
 - **Context:** Large or repetitive documents can monopolize all top-K retrieval slots, hiding relevant results from other documents.
 - **Decision:** Implemented `deduplicate_results_by_document` which limits any single document to at most 3 passages in the final returned list.
 - **Interview Takeaway:** Maximizes library-wide result diversity without degrading the top relevance tier.
+
+### 15. Strict RAG Grounding & Explicit Refusal
+- **Context:** General-purpose LLMs tend to answer unanswerable user queries using pre-trained world knowledge rather than admitting the absence of data in the user's private corpus.
+- **Decision:** Enforced a strict system grounding prompt instructing the model to reply with an explicit refusal ("This information is not found in your saved material.") if the retrieved context does not contain sufficient facts.
+- **Interview Takeaway:** Guarantees factual reliability and zero hallucinated extrapolations for enterprise/personal knowledge bases.
+
+### 16. Two-Pass Citation Validation & Hallucination Filtering
+- **Context:** Generative models can hallucinate citation IDs (e.g., citing `[Chunk 999]` when only `[Chunk 101]` was retrieved).
+- **Decision:** Implemented post-generation citation extraction using regex, validating each cited ID against the set of retrieved passages. Unverified or hallucinated citation IDs are dropped from structured output before audit logging.
+- **Interview Takeaway:** Ensures 100% citation integrity and traceability for audited Q&A logs.

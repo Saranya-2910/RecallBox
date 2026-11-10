@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.document import Document
+    from app.models.qa_log import QALog
 
 
 class User(Base):
@@ -27,6 +28,11 @@ class User(Base):
     # Relationships
     documents: Mapped[List["Document"]] = relationship(
         "Document",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    qa_logs: Mapped[List["QALog"]] = relationship(
+        "QALog",
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -15,6 +15,17 @@ from app.services.extractor import (
     extract_from_pdf,
 )
 from app.services.ingestion import ingest_document
+from app.services.llm import (
+    GeminiLLMProvider,
+    LLMProvider,
+    MockLLMProvider,
+    get_llm_provider,
+)
+from app.services.qa import (
+    answer_rag_question,
+    build_rag_prompt,
+    extract_and_validate_citations,
+)
 from app.services.search import (
     ScoredChunk,
     compute_reciprocal_rank_fusion,
@@ -52,4 +63,11 @@ __all__ = [
     "execute_semantic_search",
     "execute_keyword_search",
     "search_user_chunks",
+    "LLMProvider",
+    "MockLLMProvider",
+    "GeminiLLMProvider",
+    "get_llm_provider",
+    "build_rag_prompt",
+    "extract_and_validate_citations",
+    "answer_rag_question",
 ]
