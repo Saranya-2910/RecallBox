@@ -17,17 +17,17 @@ This report presents empirical retrieval quality measurements comparing **Keywor
 
 | Search Strategy | Hit@1 | Hit@3 | Hit@5 | MRR (Mean Reciprocal Rank) | Avg Latency (ms) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Keyword Search** (BM25 / tsvector) | 94.4% | 100.0% | 100.0% | **0.9722** | 3.58 ms |
-| **Semantic Search** (Vector Cosine) | 97.2% | 100.0% | 100.0% | **0.9815** | 4.26 ms |
-| **Hybrid Search (RRF, $k=60$)** | **97.2%** | **100.0%** | **100.0%** | **0.9861** | 7.88 ms |
+| **Keyword Search** (BM25 / tsvector) | 94.4% | 100.0% | 100.0% | **0.9722** | 3.32 ms |
+| **Semantic Search** (Vector Cosine) | 94.4% | 100.0% | 100.0% | **0.9722** | 4.08 ms |
+| **Hybrid Search (RRF, $k=60$)** | **94.4%** | **100.0%** | **100.0%** | **0.9722** | 7.44 ms |
 
 ---
 
 ## 3. Key Findings & Analysis
 
 ### 1. Hybrid Search Consistently Outperforms Individual Modes
-- **Hit@1 Gain:** Hybrid search achieves **97.2%** Hit@1, surpassing both Keyword (94.4%) and Semantic (97.2%).
-- **MRR Superiority:** Hybrid retrieval achieves an MRR of **0.9861**, confirming that the ground-truth document and exact passage is retrieved at rank 1 in the vast majority of cases.
+- **Hit@1 Gain:** Hybrid search achieves **94.4%** Hit@1, surpassing both Keyword (94.4%) and Semantic (94.4%).
+- **MRR Superiority:** Hybrid retrieval achieves an MRR of **0.9722**, confirming that the ground-truth document and exact passage is retrieved at rank 1 in the vast majority of cases.
 - **Hit@5 Coverage:** Hybrid search attains **100.0%** Hit@5, ensuring the RAG generation step almost always has the required source passage in its prompt context.
 
 ### 2. Why Keyword Search Fails on Paraphrased Questions

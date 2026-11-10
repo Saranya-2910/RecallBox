@@ -1,0 +1,107 @@
+services:
+  # 1. FastAPI Web API Server
+  - type: web
+    name: recallbox-api
+    env: python
+    region: oregon
+    plan: standard
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: APP_NAME
+        value: RecallBox
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: recallbox-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EMBEDDING_PROVIDER
+        value: sentence-transformers
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: EMBEDDING_DIMENSION
+        value: "384"
+      - key: STORAGE_BACKEND
+        value: local
+      - key: CORS_ORIGINS
+        value: '["https://recallbox.vercel.app"]'
+
+  # 2. Celery Asynchronous Ingestion Worker
+  - type: worker
+    name: recallbox-worker
+    env: python
+    region: oregon
+    plan: standard
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && celery -A app.workers.celery_app.celery_app worker --loglevel=info -c 4"
+    envVars:
+      - key: APP_NAME
+        value: RecallBox
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: recallbox-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: recallbox-redis
+          property: connectionString
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EMBEDDING_PROVIDER
+        value: sentence-transformers
+
+databases:
+  # PostgreSQL Database with pgvector extension
+  - name: recallbox-postgres
+    region: oregon
+    plan: standard
+    postgresMajorVersion: "16"
+
+  # Redis In-Memory Message Broker
+  - name: recallbox-redis
+    region: oregon
+    plan: standard
+    type: redis

@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
+from app.core.security_ssrf import SSRFValidationError, validate_url_safe
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,12 +70,27 @@ def extract_from_pdf(file_path: str) -> List[ExtractedPage]:
 
 
 async def extract_from_link(url: str) -> List[ExtractedPage]:
-    """Fetch URL and extract readable main article text, stripping navigation and scripts."""
+    """Fetch URL and extract readable main article text, with SSRF protection."""
+    try:
+        # Validate URL to prevent SSRF against private/loopback/cloud metadata services
+        safe_url = validate_url_safe(url)
+    except SSRFValidationError as e:
+        logger.warning("SSRF blocked during link extraction: %s", e)
+        raise ExtractionError(f"Prohibited external link target: {e}") from e
+
     try:
         headers = {"User-Agent": "RecallBox-Ingestion-Bot/1.0"}
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-            response = await client.get(url, headers=headers)
+            response = await client.get(safe_url, headers=headers)
             response.raise_for_status()
+
+            # Ensure final redirected URL is also safe
+            if str(response.url) != safe_url:
+                try:
+                    validate_url_safe(str(response.url))
+                except SSRFValidationError as e:
+                    raise ExtractionError(f"Redirected to prohibited target: {e}") from e
+
             html_text = response.text
 
         soup = BeautifulSoup(html_text, "html.parser")

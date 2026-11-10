@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.config import settings
+from app.core.security_ssrf import SSRFValidationError, validate_url_safe
 from app.db.session import get_db
 from app.models.document import Document
 from app.models.tag import Tag
@@ -137,6 +138,17 @@ async def create_link_document(
 ) -> DocumentResponse:
     """Intake an external URL link for asynchronous extraction and indexing."""
     url_str = str(payload.url).strip()
+
+    # SSRF Protection: validate scheme, hostname, and target IP address
+    try:
+        url_str = validate_url_safe(url_str)
+    except SSRFValidationError as e:
+        logger.warning("SSRF validation failed for link submission '%s': %s", url_str, e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid or prohibited URL: {e}",
+        )
+
     content_hash = hashlib.sha256(url_str.encode("utf-8")).hexdigest()
 
     # Duplicate check for this user

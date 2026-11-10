@@ -128,6 +128,32 @@ async def test_create_link_document_duplicate_rejected(client: AsyncClient, test
 
 
 @pytest.mark.asyncio
+async def test_create_link_ssrf_forbidden_targets(client: AsyncClient, test_user_auth_headers: dict):
+    """Verify that private IP ranges, loopback, and cloud metadata targets are rejected with 400 or 422."""
+    forbidden_urls = [
+        "http://127.0.0.1:8000/internal-admin",
+        "http://localhost:5432",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://10.0.0.1/sensitive",
+        "http://192.168.1.1/router",
+        "http://[::1]:8080",
+        "file:///etc/passwd",
+        "gopher://127.0.0.1:6379",
+    ]
+
+    for bad_url in forbidden_urls:
+        response = await client.post(
+            "/documents/link",
+            json={"url": bad_url},
+            headers=test_user_auth_headers,
+        )
+        assert response.status_code in (
+            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+        ), f"Expected 400 or 422 for {bad_url}, got {response.status_code}"
+
+
+@pytest.mark.asyncio
 async def test_create_note_document_success(client: AsyncClient, test_user_auth_headers: dict):
     """Verify storing a note saves content and returns status=pending."""
     payload = {
