@@ -22,10 +22,10 @@ export default function DocumentDetailPage({ documentId, onBack, onSelectDocumen
       setError(null);
       const [docData, relatedData] = await Promise.all([
         api.getDocument(documentId),
-        api.getRelatedDocuments(documentId).catch(() => []),
+        api.getRelatedDocuments(documentId).catch(() => ({ related: [] })),
       ]);
       setDocument(docData);
-      setRelatedDocs(relatedData || []);
+      setRelatedDocs(Array.isArray(relatedData) ? relatedData : (relatedData?.related || []));
     } catch (err) {
       setError(err.message || 'Failed to load document details');
     } finally {
@@ -44,11 +44,15 @@ export default function DocumentDetailPage({ documentId, onBack, onSelectDocumen
 
     try {
       setTagLoading(true);
-      const updatedTags = await api.addTag(documentId, newTagName.trim());
-      setDocument((prev) => ({
-        ...prev,
-        tags: updatedTags,
-      }));
+      const addedTag = await api.addTag(documentId, newTagName.trim());
+      setDocument((prev) => {
+        const existing = Array.isArray(prev?.tags) ? prev.tags : [];
+        const alreadyPresent = existing.some((t) => t.id === addedTag.id);
+        return {
+          ...prev,
+          tags: alreadyPresent ? existing : [...existing, addedTag],
+        };
+      });
       setNewTagName('');
     } catch (err) {
       alert(`Failed to add tag: ${err.message}`);
@@ -306,10 +310,13 @@ export default function DocumentDetailPage({ documentId, onBack, onSelectDocumen
           </p>
         ) : (
           <div className="space-y-3">
-            {relatedDocs.map((item) => (
+            {relatedDocs.map((item) => {
+              const relatedId = item.document_id ?? item.id;
+              const sim = item.similarity ?? item.similarity_score;
+              return (
               <div
-                key={item.id}
-                onClick={() => onSelectDocument(item.id)}
+                key={relatedId}
+                onClick={() => onSelectDocument(relatedId)}
                 className="group flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3">
@@ -327,15 +334,16 @@ export default function DocumentDetailPage({ documentId, onBack, onSelectDocumen
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {item.similarity_score !== undefined && (
+                  {sim !== undefined && sim !== null && (
                     <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-                      {(item.similarity_score * 100).toFixed(0)}% match
+                      {(sim * 100).toFixed(0)}% match
                     </span>
                   )}
                   <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-colors" />
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

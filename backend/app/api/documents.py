@@ -43,6 +43,21 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
+def _enqueue_ingestion(document_id: int) -> None:
+    """Dispatch background Celery ingestion task unless running in test mode."""
+    if settings.APP_ENV == "testing":
+        return
+    try:
+        from app.workers.celery_app import process_document_task
+        process_document_task.delay(document_id)
+    except Exception as exc:
+        logger.warning(
+            "Failed to enqueue Celery ingestion task for document id=%d: %s",
+            document_id,
+            exc,
+        )
+
+
 @router.post(
     "/upload",
     response_model=DocumentResponse,
@@ -121,6 +136,7 @@ async def upload_pdf_document(
     await db.commit()
     await db.refresh(document)
 
+    _enqueue_ingestion(document.id)
     logger.info("PDF document id=%d intake complete with status=pending", document.id)
     return document
 
@@ -179,6 +195,7 @@ async def create_link_document(
     await db.commit()
     await db.refresh(document)
 
+    _enqueue_ingestion(document.id)
     logger.info("Link document id=%d intake complete with status=pending", document.id)
     return document
 
@@ -229,6 +246,7 @@ async def create_note_document(
     await db.commit()
     await db.refresh(document)
 
+    _enqueue_ingestion(document.id)
     logger.info("Note document id=%d intake complete with status=pending", document.id)
     return document
 

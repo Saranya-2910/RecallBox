@@ -31,7 +31,7 @@ export default function LibraryPage({ onSelectDocument, onNavigateAdd }) {
       if (sourceTypeFilter) params.source_type = sourceTypeFilter;
 
       const data = await api.getDocuments(params);
-      setDocuments(data || []);
+      setDocuments(Array.isArray(data) ? data : (data?.items || []));
       setError(null);
     } catch (err) {
       if (!isPolling) {
@@ -45,7 +45,7 @@ export default function LibraryPage({ onSelectDocument, onNavigateAdd }) {
   const fetchTags = async () => {
     try {
       const tagList = await api.getTags();
-      setTags(tagList || []);
+      setTags(Array.isArray(tagList) ? tagList : []);
     } catch {
       // Non-blocking
     }

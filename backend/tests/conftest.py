@@ -21,7 +21,8 @@ from app.main import app
 from app.models.user import User
 from app.services.storage import LocalStorageService, get_storage_service
 
-# Configure test storage directory
+# Configure test environment and storage directory
+settings.APP_ENV = "testing"
 TEST_STORAGE_PATH = Path("./test_storage").resolve()
 settings.LOCAL_STORAGE_DIR = str(TEST_STORAGE_PATH)
 
